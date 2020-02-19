@@ -1,0 +1,56 @@
+package mypackage
+
+case class Car(
+                BlankNo: String,
+                Brand: String,
+                Color: String,
+                Condition: String,
+                EditDate: String,
+                FullName: String,
+                Info: String,
+                Inn: String,
+                LicenseDate: String,
+                LicenseNum: String,
+                Model: String,
+                Name: String,
+                OgrnNum: String,
+                OwnershipDate: String,
+                OwnershipNum: String,
+                OwnershipType: String,
+                RegNum: String,
+                Region: String,
+                STSDate: String,
+                STSNum: String,
+                ValidityDate: String,
+                Year: String,
+                YellowColor: String,
+                YellowRegNum: String
+              ) {
+  override def toString: String =
+    Array(BlankNo,
+      Brand,
+      Color,
+      Condition,
+      EditDate,
+      FullName,
+      Info,
+      Inn,
+      LicenseDate,
+      LicenseNum,
+      Model,
+      Name,
+      OgrnNum,
+      OwnershipDate,
+      OwnershipNum,
+      OwnershipType,
+      RegNum,
+      Region,
+      STSDate,
+      STSNum,
+      ValidityDate,
+      Year,
+      YellowColor,
+      YellowRegNum).mkString(",")
+
+
+}
