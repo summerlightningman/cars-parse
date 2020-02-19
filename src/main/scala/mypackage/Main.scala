@@ -6,14 +6,19 @@ import net.liftweb.json._
 import scalaj.http.Http
 
 import scala.concurrent.ExecutionContext
+import scala.io.Source
 
 
 object Main extends App {
-  // Insert key "cookie" with cookie-value from browser
+  // Create file cookie.txt and type there your cookie from browser as HTTP-header
+  val openCookie = Source.fromFile(s"${System.getProperty("user.dir")}/src/main/resources/cookie.txt")
+  val cookie = openCookie.mkString
+  openCookie.close
+
   val headers: Map[String, String] = Map(
     "accept" -> "application/json, text/plain, */*",
     "accept-encoding" -> "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
-
+    "cookie" -> cookie,
     "user-agent" -> "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36"
   )
 
@@ -34,7 +39,6 @@ object Main extends App {
     .asString
     .body
 
-
   val count = parse(result).extract[Page].Count / 20 + 1
 
   for (page <- 1 to count) execute {
@@ -44,10 +48,10 @@ object Main extends App {
       .headers(headers)
       .asString
       .body
-    print(s"Parsong page $page\n")
+    print(s"Parsing page $page\n")
     val cars = parse(result).extract[Page].Infos
     cars.foreach(car => pw.write(car.toString + "\n"))
+    if (page == count) System.exit(0)
   }
-
-  Thread.currentThread().join()
+  Thread.currentThread.join
 }
