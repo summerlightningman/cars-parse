@@ -25,10 +25,10 @@ object Main extends App {
   val pw = new PrintWriter(new File(s"${System.getProperty("user.dir")}/src/main/resources/cars.csv"))
   implicit val formats: DefaultFormats.type = DefaultFormats
 
-  def execute(body: => Unit): Unit = ExecutionContext.global.execute {
-    new Runnable {
-      override def run(): Unit =
-        body
+  def execute(body: => Unit): Thread = new Thread {
+
+    override def run(): Unit = {
+      body
     }
   }
 
@@ -41,17 +41,23 @@ object Main extends App {
 
   val count = parse(result).extract[Page].Count / 20 + 1
 
-  for (page <- 1 to count) execute {
-    val result = Http(s"https://www.mos.ru/altmosmvc/api/v1/taxi/getInfo/" +
-      "?Region=%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0" +
-      s"&RegNum=&FullName=&LicenseNum=&Condition=&pagenumber=${page}")
-      .headers(headers)
-      .asString
-      .body
-    print(s"Parsing page $page\n")
-    val cars = parse(result).extract[Page].Infos
-    cars.foreach(car => pw.write(car.toString + "\n"))
-    if (page == count) System.exit(0)
+  val threads: Seq[Thread] = for (page <- 1 to count) yield new Thread {
+    override def run(): Unit = {
+      val result = Http("https://www.mos.ru/altmosmvc/api/v1/taxi/getInfo/" +
+        "?Region=%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0" +
+        s"&RegNum=&FullName=&LicenseNum=&Condition=&pagenumber=${page}")
+        .headers(headers)
+        .asString
+        .body
+      print(s"Parsing page $page\n")
+      val cars = parse(result).extract[Page].Infos
+      cars.foreach(car => pw.write(car.toString + "\n"))
+      this.interrupt()
+    }
   }
-  Thread.currentThread.join
+  threads.foreach {
+    thread =>
+      thread.start()
+      thread.join()
+  }
 }
